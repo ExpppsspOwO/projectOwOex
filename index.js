@@ -23,42 +23,42 @@ app.use(bodyParser.json())// ใช้ได้ทุก url
 
 const port = 7000
 
-app.get('/listid',async (req, res) => {
-    console.log('email=',  req.query)
+app.get('/listid', async (req, res) => {
+    console.log('email=', req.query)
     let ids = await knex("users")
-       .where({email: req.query.email})
+        .where({ email: req.query.email })
     res.send({
         row: ids[0],
         status: 'ok'
     })
-   
-   })
+
+})
 app.post('/login', async (req, res) => {
     console.log(req.body)
     //check request
     let email = req.body.email
     let passwd = req.body.passwd
-    if (req.body.email == '' || req.body.passwd == ''){
+    if (req.body.email == '' || req.body.passwd == '') {
         return res.send({
-            massage :"กรุณาตรวจสอบ Email และ Password โปรดใส่ข้อมูล",
-            status : 'failed'
+            massage: "กรุณาตรวจสอบ Email และ Password โปรดใส่ข้อมูล",
+            status: 'failed'
         })
-    } 
+    }
     console.log('Next step 2')
     // check value in database
-    let id = await knex('users').where({email : req.body.email , password : req.body.passwd}).select();
+    let id = await knex('users').where({ email: req.body.email, password: req.body.passwd }).select();
     console.log(id.length)
-    if (id.length == 0){
+    if (id.length == 0) {
         return res.send({
-            massage :"กรุณาตรวจสอบ Email และ Password ให้ถูกต้อง",
-            status : 'failed_user'            
+            massage: "กรุณาตรวจสอบ Email และ Password ให้ถูกต้อง",
+            status: 'failed_user'
         })
     }
     console.log('Next step 3 successfully')
     res.send({
-        massage :"login successfully",
-        statuslogin : 'ok',
-        successlogin : id[0],
+        massage: "login successfully",
+        statuslogin: 'ok',
+        successlogin: id[0],
     })
 })
 // ส่งแบบ get
@@ -129,7 +129,7 @@ app.post('/update', async (req, res) => {
     let status = req.body.status
     let picture = req.body.picture
     try {
-        let ids = await knex('users').where({ id : id }).update({ username: username, password: passwd, email: email, status: status, picture: picture});
+        let ids = await knex('users').where({ id: id }).update({ username: username, password: passwd, email: email, status: status, picture: picture });
         res.send({
             ok: 'yes',
             id: ids
@@ -205,7 +205,7 @@ app.post("/user/generateToken", (req, res) => {
     }
 
     const token = jwt.sign(data, jwtSecretKey);
-    console.log("token=",token)
+    console.log("token=", token)
     res.send(token);
 });
 
@@ -237,4 +237,82 @@ app.get("/user/validateToken", (req, res) => {
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
+app.post('/inserttravel', async (req, res) => {
+    console.log(req.body);
+    let placeName = req.body.placeName
+    let details = req.body.details
+    let url = req.body.url
 
+    try {
+        let data = await knex('tourist_attraction').insert({ name: placeName, details: details, picture: url });
+        res.send({
+            ok: 'yes',
+            data: data
+        })
+    } catch (e) {
+        res.send({
+            ok: '0',
+            error: e.message
+        })
+    }
+
+})
+app.get('/gettravels', async (req, res) => {
+    try {
+        let row = await knex('tourist_attraction').select('*');
+        res.send({
+            ok: 'yes',
+            travelList: row
+        })
+    } catch (error) {
+        res.send({
+            ok: '0',
+            error: error.message
+        })
+    }
+})
+app.get('/deletetravel', async (req, res) => {
+    try {
+        let id = req.query.id
+        await knex('tourist_attraction').where('id', id).del();
+        res.send({
+            ok: 'yes',
+            // id: ids
+        })
+    } catch (e) {
+        res.send({
+            ok: 0,
+            error: e.message
+        })
+    }
+})
+// app.get('/gettravelsedit', async (req, res) => {
+//     try {
+//         let id = req.query.id
+//         let row = await knex('tourist_attraction').select('*').where('id', id);
+//         res.send({
+//             ok: 'yes',
+//             travelList: row
+//         })
+//     } catch (error) {
+//         res.send({
+//             ok: '0',
+//             error: error.message
+//         })
+//     }
+// })
+app.get('/edittravel', async (req, res) => {
+    try {
+        let id = req.query.id
+        await knex('tourist_attraction').where('id', id).del();
+        res.send({
+            ok: 'yes',
+            // id: ids
+        })
+    } catch (e) {
+        res.send({
+            ok: 0,
+            error: e.message
+        })
+    }
+})
